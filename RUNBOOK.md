@@ -1848,7 +1848,7 @@ export function AdmissionsChart({ data }) {
 
 ### Shipping a new release
 
-Only committed code ships. Create a tarball with `git archive --format=tar.gz -o web.tar.gz HEAD -- . ':(exclude)*.pdf'`, copy it to the VPS, then run `sudo doctor-tracker-release deploy web ~/web.tar.gz`. The tool builds the release as the app user and switches the `current` symlink atomically. It restarts only `doctor-tracker-web`, waits for `/login` to answer, and rolls back automatically on failure. `sudo doctor-tracker-release rollback web` returns to the previous release.
+Only committed code ships. Create a tarball with `git -c core.autocrlf=false archive --format=tar.gz -o web.tar.gz HEAD -- . ':(exclude)*.pdf'` (the `-c` flag keeps Windows line-ending conversion out of the archive), copy it to the VPS, then run `sudo doctor-tracker-release deploy web ~/web.tar.gz`. The tool builds the release as the app user and switches the `current` symlink atomically. It restarts only `doctor-tracker-web`, waits for `/login` to answer, and rolls back automatically on failure. `sudo doctor-tracker-release rollback web` returns to the previous release.
 
 A `nip.io` address encodes the public IP. If the VPS IP ever changes, both hostnames, the certificate, and the API's CORS origin must change together.
 
