@@ -78,8 +78,8 @@
 | --- | --- |
 | 🟦 Frontend GitHub repo | `https://github.com/zakaria-akash/doctor-tracker` |
 | 🟩 Backend GitHub repo | `https://github.com/zakaria-akash/doctor-tracker-backend` |
-| 🌐 Planned frontend URL | `https://dt.58def4e4.nip.io` (Hostinger KVM 4 VPS) |
-| 🔌 Planned backend API URL | `https://api.58def4e4.nip.io/api/v1` (+ `/api/docs`) |
+| 🌐 Planned frontend URL | `https://doctor-tracker.58def4e4.nip.io` (Hostinger KVM 4 VPS) |
+| 🔌 Planned backend API URL | `https://doctor-tracker-api.58def4e4.nip.io/api/v1` (+ `/api/docs`) |
 | 🔑 Demo credentials | Admin `admin@doctortracker.test` / `Admin@12345` · Viewer `viewer@doctortracker.test` / `Viewer@12345` |
 
 ### 0.4 Requirements traceability matrix
@@ -167,7 +167,7 @@ flowchart LR
 #### In plain words
 
 1. 🔐 The browser **never talks to Express directly**. It only calls its own origin (`/api/*`), and Next.js forwards the call to Express with `Authorization: Bearer <JWT>`.
-2. 🍪 The JWT lives in a **first-party `httpOnly` cookie** on `dt.58def4e4.nip.io`, so JavaScript can't read it and no cross-origin cookie rules come into play.
+2. 🍪 The JWT lives in a **first-party `httpOnly` cookie** on `doctor-tracker.58def4e4.nip.io`, so JavaScript can't read it and no cross-origin cookie rules come into play.
 3. 🖥️ **Server Components** (dashboard, doctor profile) and the BFF reach Express over a **private service binding** on the same VPS: no public network hop, and the API service port is never exposed directly.
 4. ⚛️ **Client Components** (the interactive tables) use **TanStack Query** through the BFF for caching, smooth pagination and optimistic deletes.
 
@@ -316,7 +316,7 @@ gantt
 - [ ] **GitHub** — two public repos: `doctor-tracker-frontend` and `doctor-tracker-backend`
 - [ ] **MongoDB Atlas** — free cluster for **development** (backend runbook, phase B0); production data moves to the VPS later
 - [ ] **Hostinger KVM 4 VPS** — Ubuntu 24.04 LTS, your SSH key added, IPv4 noted (backend runbook, B9)
-- [ ] **Public DNS and HTTPS:** verify that `dt.58def4e4.nip.io` and `api.58def4e4.nip.io` resolve globally to the VPS and qualify for certificates; no existing website domain is used.
+- [ ] **Public DNS and HTTPS:** verify that `doctor-tracker.58def4e4.nip.io` and `doctor-tracker-api.58def4e4.nip.io` resolve globally to the VPS and qualify for certificates; no existing website domain is used.
 
 ### 3.3 Tooling
 
@@ -1390,7 +1390,7 @@ export function applyServerErrors(error, setError) {
 
 ### ✅ Definition of Done — F3
 
-- [ ] Network tab shows `GET /api/doctors?...` (same-origin) — **no** request to `api.58def4e4.nip.io` from the browser
+- [ ] Network tab shows `GET /api/doctors?...` (same-origin) — **no** request to `doctor-tracker-api.58def4e4.nip.io` from the browser
 - [ ] Typing quickly in search triggers **one** request ~350 ms after the last keystroke · URL updates too
 - [ ] Changing page keeps the previous rows visible (dimmed) until the next page arrives
 - [ ] Deleting the session cookie and clicking "Next page" sends you to `/login?expired=1`
@@ -1833,8 +1833,8 @@ export function AdmissionsChart({ data }) {
 
 | Public entry point | Planned address |
 | --- | --- |
-| Frontend | [https://dt.58def4e4.nip.io](https://dt.58def4e4.nip.io) |
-| Backend API | [https://api.58def4e4.nip.io](https://api.58def4e4.nip.io) |
+| Frontend | [https://doctor-tracker.58def4e4.nip.io](https://doctor-tracker.58def4e4.nip.io) |
+| Backend API | [https://doctor-tracker-api.58def4e4.nip.io](https://doctor-tracker-api.58def4e4.nip.io) |
 
 The full plan uses separate app services, private connections between services, an isolated Doctor Tracker database, and two **new** Nginx site definitions. Existing websites, site files, services, databases, certificates, and backup jobs must remain untouched.
 
@@ -1861,7 +1861,7 @@ A `nip.io` address contains the public IP in encoded form. It avoids using a sub
 ````markdown
 # 🩺 Doctor Tracker — Frontend
 
-<badges> · **Planned live:** https://dt.58def4e4.nip.io · **API:** https://api.58def4e4.nip.io/api/docs
+<badges> · **Planned live:** https://doctor-tracker.58def4e4.nip.io · **API:** https://doctor-tracker-api.58def4e4.nip.io/api/docs
 
 > **Demo:** Admin `admin@doctortracker.test` / `Admin@12345` · Viewer (read-only) `viewer@doctortracker.test` / `Viewer@12345`
 > 🖥️ Planned for a Hostinger KVM 4 VPS: Nginx + Let's Encrypt · systemd · MongoDB 8 (authentication, verified backups).
@@ -1894,7 +1894,7 @@ Features · Project structure · Deployment (Hostinger VPS: Nginx, systemd, TLS)
 <details>
 <summary>🧠 <b>Decision 1 — BFF + httpOnly cookie, not localStorage and not direct browser→API calls</b></summary>
 
-- **Context.** The frontend (`dt.58def4e4.nip.io`) and the API (`api.58def4e4.nip.io`) are separate apps on different origins. Calling the API straight from the browser would need CORS plus a cookie shared across subdomains, or a token in `localStorage`, which any injected script can read and Server Components can't see (ruling out server-side auth checks). The design also keeps working when the frontend is mirrored on another host such as Vercel, where a cookie set by the API would become a blocked *third-party* cookie.
+- **Context.** The frontend (`doctor-tracker.58def4e4.nip.io`) and the API (`doctor-tracker-api.58def4e4.nip.io`) are separate apps on different origins. Calling the API straight from the browser would need CORS plus a cookie shared across subdomains, or a token in `localStorage`, which any injected script can read and Server Components can't see (ruling out server-side auth checks). The design also keeps working when the frontend is mirrored on another host such as Vercel, where a cookie set by the API would become a blocked *third-party* cookie.
 - **Decision.** Express issues a short-lived JWT. The Next.js server stores it in a first-party `httpOnly; Secure; SameSite=Lax` cookie. The browser calls only same-origin `/api/*` (a Route Handler BFF), which attaches `Authorization: Bearer`. Server Components call Express directly.
 - **Consequences.** ✅ XSS can't exfiltrate the token · ✅ no CORS or third-party-cookie problems · ✅ `proxy.js` can gate routes before render · ✅ Express stays a clean, stateless Bearer API that is easy to test with Swagger and curl. ⚠️ One extra hop (over loopback on the VPS, ≈ 1 ms) · ⚠️ the JWT secret is shared with the Next server for local verification (server-only env vars, `iss`/`aud` claims; RS256 with a public key would remove the shared secret).
 
@@ -1946,9 +1946,9 @@ Dear Hiring Team,
 
 Thank you for the opportunity. Please find my Doctor Tracker submission below.
 
-• Live frontend:    https://dt.58def4e4.nip.io
-• Live backend API: https://api.58def4e4.nip.io/api/v1
-  (health: /api/v1/health · interactive docs: https://api.58def4e4.nip.io/api/docs)
+• Live frontend:    https://doctor-tracker.58def4e4.nip.io
+• Live backend API: https://doctor-tracker-api.58def4e4.nip.io/api/v1
+  (health: /api/v1/health · interactive docs: https://doctor-tracker-api.58def4e4.nip.io/api/docs)
 • Frontend repository: https://github.com/zakaria-akash/doctor-tracker
 • Backend repository:  https://github.com/zakaria-akash/doctor-tracker-backend
 

@@ -25,7 +25,7 @@
 > **In plain English:** this is the web interface for a clinic operations tracker. Authorized staff can browse doctors and patients, keep assignments up to date, and review operational trends. It is a coordination tool—not an electronic medical record or a substitute for clinical judgment.
 
 > [!TIP]
-> **Planned public addresses:** [web app](https://dt.58def4e4.nip.io) · [API](https://api.58def4e4.nip.io). These are not live until deployment and external HTTPS checks are complete. See the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md); existing VPS websites must remain untouched.
+> **Planned public addresses:** [web app](https://doctor-tracker.58def4e4.nip.io) · [API](https://doctor-tracker-api.58def4e4.nip.io). These are not live until deployment and external HTTPS checks are complete. See the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md); existing VPS websites must remain untouched.
 
 ## 🧭 At a glance
 
