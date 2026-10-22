@@ -13,7 +13,8 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)
 ![Recharts](https://img.shields.io/badge/Recharts-3-22B5BF?style=for-the-badge)
-![Status](https://img.shields.io/badge/status-local_development-F59E0B?style=for-the-badge)
+![Status](https://img.shields.io/badge/status-live-16A34A?style=for-the-badge)
+![Hosting](https://img.shields.io/badge/hosting-Hostinger_KVM_4_VPS-673DE6?style=for-the-badge&logo=hostinger&logoColor=white)
 
 **Companion project:** Doctor Tracker REST API · Express 5 · MongoDB · maintained in a separate repository
 
@@ -25,7 +26,7 @@
 > **In plain English:** this is the web interface for a clinic operations tracker. Authorized staff can browse doctors and patients, keep assignments up to date, and review operational trends. It is a coordination tool—not an electronic medical record or a substitute for clinical judgment.
 
 > [!TIP]
-> **Planned public addresses:** [web app](https://doctor-tracker.58def4e4.nip.io) · [API](https://doctor-tracker-api.58def4e4.nip.io). These are not live until deployment and external HTTPS checks are complete. See the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md); existing VPS websites must remain untouched.
+> **Live demo:** [doctor-tracker.58def4e4.nip.io](https://doctor-tracker.58def4e4.nip.io) · API docs: [doctor-tracker-api.58def4e4.nip.io/api/docs](https://doctor-tracker-api.58def4e4.nip.io/api/docs). On the sign-in page, choose **Use admin demo** or **Use viewer demo**. The demo runs on synthetic data, so please don't enter real patient information.
 
 ## 🧭 At a glance
 
@@ -61,6 +62,19 @@
 - **Access control:** Express is the final authority for identity, roles, validation, and data changes.
 - **Interface state:** TanStack Query manages server data; URL-backed filters make useful views bookmarkable and shareable.
 - **Settings scope:** personal preferences stay in this browser; they do not change shared clinic settings.
+
+## 🌐 Live deployment
+
+Since 22 October 2026, the app has been self-hosted on a Hostinger KVM 4 VPS (Ubuntu 24.04). It shares the server with other websites but stays isolated from them.
+
+| Item          | Details                                                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 🖥️ Web app    | [doctor-tracker.58def4e4.nip.io](https://doctor-tracker.58def4e4.nip.io)                                               |
+| 🔌 API · docs | [doctor-tracker-api.58def4e4.nip.io/api/docs](https://doctor-tracker-api.58def4e4.nip.io/api/docs)                     |
+| 🧱 Stack      | Nginx (Let's Encrypt TLS, HTTP/2) → Next.js `next start` on loopback → Express on loopback → MongoDB 8 on loopback     |
+| ⚙️ Operations | Two sandboxed systemd services, health-checked releases with automatic rollback, and nightly verified database backups |
+
+The browser only ever talks to the web host: Nginx forwards every path to Next.js, whose same-origin bridge calls the API privately on the server. The [deployment record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) documents the setup, the Atlas → VPS data migration, the verification results, and how to deploy or roll back a release.
 
 ## 🚀 Run locally
 
@@ -157,18 +171,21 @@ For a complete manual review, test both roles; create, edit, reassign, and delet
 - Use synthetic or approved test data during development; do not place real patient data in screenshots, public repositories, or demo environments.
 - Keep `.env.local` private. Rotate any secret that has been disclosed outside its intended secret store.
 - The API is the source of truth for access control. Hiding a button in the interface is not a security boundary.
-- Configure HTTPS, trusted proxy headers, backups, and environment secrets before production use.
+- Any new environment needs HTTPS, trusted proxy headers, backups, and private environment secrets. The [deployment record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) shows how the live server provides them.
 
 ## 🗺️ Current notes
 
 - **Public landing route:** `src/app/page.js` contains a public-facing landing page, but `next.config.mjs` currently redirects `/` to `/dashboard`. Remove or change that redirect when the marketing page should be the public entry point.
 - **Settings scope:** preferences are local to one browser. Clinic-wide settings require backend storage and authorization work.
-- **Deployment evidence:** no live URL or committed UI screenshots are claimed by this README. Add them after a deployment and visual review are completed.
-- **Data meaning:** dashboard counts and records reflect the configured API database; demo data is synthetic and exists for local presentation/testing only.
+- **Deployment evidence:** the live site passed external HTTPS checks and real-browser tests on desktop and mobile on 22 October 2026 (see the [deployment record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md)). UI screenshots are not committed yet.
+- **Data meaning:** dashboard counts and records reflect the configured API database. Local development and the public demo both use synthetic data. Anyone with the public demo accounts can change it, and nightly backups allow a restore.
+- **App icons:** `src/app/icon.svg` (a white stethoscope on deep blue) is the source of the tab icon. `favicon.ico` (16/32/48 px) and `apple-icon.png` (180 px) are rendered from it, so regenerate them if the SVG changes.
 
 ## 🔗 Project links
 
+- [Live web app](https://doctor-tracker.58def4e4.nip.io) · [Live API docs](https://doctor-tracker-api.58def4e4.nip.io/api/docs)
 - Backend API README: in the separate `doctor-tracker-backend` repository
+- [VPS deployment and migration record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md)
 - [Frontend implementation runbook](RUNBOOK.md)
 
 <div align="center">

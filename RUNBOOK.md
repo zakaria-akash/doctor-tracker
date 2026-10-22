@@ -15,7 +15,7 @@
 ![Hostinger VPS](https://img.shields.io/badge/Hosting-Hostinger_KVM_4_VPS-673DE6?style=for-the-badge&logo=hostinger&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx_%2B_systemd-self--hosted-009639?style=for-the-badge&logo=nginx&logoColor=white)
 
-📗 **Companion runbook:** [backend RUNBOOK.md](https://github.com/zakaria-akash/doctor-tracker-backend/blob/main/RUNBOOK.md) — Express 5 · MongoDB 8 · Hostinger VPS. For current hosting steps, use the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md).
+📗 **Companion runbook:** [backend RUNBOOK.md](https://github.com/zakaria-akash/doctor-tracker-backend/blob/main/RUNBOOK.md) — Express 5 · MongoDB 8 · Hostinger VPS. The live deployment (since 22 Oct 2026) is documented in the [VPS deployment and migration record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md).
 
 | 🎯 [Mission](#mission) | 🏗️ [Architecture](#architecture) | 🗓️ [Plan](#plan) | 🛠️ [Build F1→F8](#f1) | 🚀 [Deploy](#deploy) | 📝 [README](#readme) | 📮 [Submit](#submit) | 🎤 [Interview](#interview) |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -70,7 +70,7 @@
 > **3 — Hard deadline: 48 hours after the email arrived.** Write your exact cut-off here 👉 `__________`. Submit with **Reply All on the same email thread** — never start a new thread.
 
 > [!IMPORTANT]
-> **Hosting decision:** Doctor Tracker is planned for the existing Hostinger KVM 4 VPS, using two new `nip.io` names, separate systemd services, Nginx + HTTPS, and an isolated MongoDB database migrated from Atlas. The [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) supersedes this runbook's original fresh-server deployment assumptions; deployment has not started.
+> **Hosting (implemented 22 Oct 2026):** Doctor Tracker runs on the existing Hostinger KVM 4 VPS under two new `nip.io` names, with separate systemd services, Nginx + HTTPS, and an isolated MongoDB database migrated from Atlas. The [VPS deployment and migration record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) supersedes this runbook's original fresh-server deployment assumptions.
 
 ### 0.3 Deliverables
 
@@ -78,8 +78,8 @@
 | --- | --- |
 | 🟦 Frontend GitHub repo | `https://github.com/zakaria-akash/doctor-tracker` |
 | 🟩 Backend GitHub repo | `https://github.com/zakaria-akash/doctor-tracker-backend` |
-| 🌐 Planned frontend URL | `https://doctor-tracker.58def4e4.nip.io` (Hostinger KVM 4 VPS) |
-| 🔌 Planned backend API URL | `https://doctor-tracker-api.58def4e4.nip.io/api/v1` (+ `/api/docs`) |
+| 🌐 Live frontend URL | `https://doctor-tracker.58def4e4.nip.io` (Hostinger KVM 4 VPS) |
+| 🔌 Live backend API URL | `https://doctor-tracker-api.58def4e4.nip.io/api/v1` (+ `/api/docs`) |
 | 🔑 Demo credentials | Admin `admin@doctortracker.test` / `Admin@12345` · Viewer `viewer@doctortracker.test` / `Viewer@12345` |
 
 ### 0.4 Requirements traceability matrix
@@ -106,7 +106,7 @@ Every line of the brief, mapped to how it's met and where. Use it as the final Q
 | 6 | Next.js frontend + Express backend + MongoDB + REST | Two repos · `/api/v1` resources · proper verbs and status codes | both runbooks | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
 | 6 | State management & data-fetching strategy | TanStack Query (server state) · nuqs (URL state) · RSC for the dashboard | [F3](#f3) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
 | 7 | README with the 5 mandatory sections | Same section names, same order as the PDF, in both repos | [D](#readme) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
-| ✉️ | Backend on Render/Vercel/**own VPS** · frontend hosted · 4 links · Reply All · runs locally in the interview | Both apps + MongoDB planned for the Hostinger KVM 4 VPS (Nginx · systemd · HTTPS) · email template · interview checklist | [H](#deploy) · [S](#submit) · [🎤](#interview) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
+| ✉️ | Backend on Render/Vercel/**own VPS** · frontend hosted · 4 links · Reply All · runs locally in the interview | Both apps + MongoDB live on the Hostinger KVM 4 VPS (Nginx · systemd · HTTPS) · email template · interview checklist | [H](#deploy) · [S](#submit) · [🎤](#interview) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
 
 ### 0.5 How the evaluation criteria map to this plan
 
@@ -370,7 +370,7 @@ JWT_AUDIENCE=doctor-tracker-web
 
 | Variable | Exposed to the browser? | Notes |
 | --- | --- | --- |
-| `API_URL` | ❌ No | Dev: copy the API base URL printed by the backend server. VPS: use the private backend service address from the deployment plan. No `NEXT_PUBLIC_` prefix: the browser only calls `/api/*` |
+| `API_URL` | ❌ No | Dev: copy the API base URL printed by the backend server. VPS: the API's private loopback address, `http://127.0.0.1:4100/api/v1` (see the [deployment record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md)). No `NEXT_PUBLIC_` prefix: the browser only calls `/api/*` |
 | `JWT_SECRET` | ❌ No | Generate it once (backend runbook, B1) and paste the same value into both apps |
 | `JWT_ISSUER` / `JWT_AUDIENCE` | ❌ No | Must match the backend's claims, otherwise verification fails |
 
@@ -1826,27 +1826,31 @@ export function AdmissionsChart({ data }) {
 
 <a id="deploy"></a>
 
-## 🚀 12. Phase H — Deploy to the Hostinger VPS
+## 🚀 12. Phase H — Deploy to the Hostinger VPS ✅
 
-> [!IMPORTANT]
-> **Use the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) as the sole deployment procedure.** This runbook began as a build guide for a fresh server; its earlier PM2, port, and example-domain assumptions do not apply to the VPS that already hosts other websites. Do not deploy until the owner approves the plan.
+> [!NOTE]
+> **Deployed and verified on 22 October 2026.** The [VPS deployment and migration record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) documents every step, the measured results, and the rollback procedure. This runbook's earlier PM2, port, and example-domain assumptions for a fresh server never applied to this VPS, which already hosts other websites.
 
-| Public entry point | Planned address |
+| Public entry point | Live address |
 | --- | --- |
 | Frontend | [https://doctor-tracker.58def4e4.nip.io](https://doctor-tracker.58def4e4.nip.io) |
-| Backend API | [https://doctor-tracker-api.58def4e4.nip.io](https://doctor-tracker-api.58def4e4.nip.io) |
+| Backend API | [https://doctor-tracker-api.58def4e4.nip.io/api/v1](https://doctor-tracker-api.58def4e4.nip.io/api/v1/health) · [Swagger](https://doctor-tracker-api.58def4e4.nip.io/api/docs) |
 
-The full plan uses separate app services, private connections between services, an isolated Doctor Tracker database, and two **new** Nginx site definitions. Existing websites, site files, services, databases, certificates, and backup jobs must remain untouched.
+**What runs:** Nginx terminates TLS (one Let's Encrypt certificate for both names, HTTP/2) and sends every path on the web host, including `/api/*`, to `next start` on `127.0.0.1:3100` (`doctor-tracker-web.service`). The BFF reaches Express on `127.0.0.1:4100` (`doctor-tracker-api.service`) over loopback, and Express uses its own `doctor_tracker` database on the server's authenticated, loopback-only MongoDB. Both services run as a dedicated unprivileged user under systemd sandboxing and CPU/memory budgets. No existing website, service, database, certificate, or backup job was modified.
 
-### Deployment gates
+### Deployment gates — all passed
 
-1. **Before:** confirm the VPS snapshot, current site health, free resources, unused service ports, public DNS resolution, and HTTPS certificate eligibility.
-2. **Stage:** prepare separate release directories and service accounts, install locked dependencies, build the frontend, and keep production secrets outside Git.
-3. **Migrate:** restore the Atlas `doctor_tracker_dev` database into an isolated staging database; validate records, references, indexes, and images before a write-frozen final restore. Never run the destructive demo seed in production.
-4. **Cut over:** enable only the two Doctor Tracker site definitions; validate Nginx configuration before reload and preserve the existing unknown-host rejection behavior.
-5. **Accept:** test both public addresses from outside the VPS, verify login and core flows, compare the health of **every existing site**, confirm backups, and be ready to roll back only Doctor Tracker changes.
+1. **Before:** ✅ read-only audit of the server, the snapshot reported by the owner, and a 50-probe baseline of every existing site. DNS resolved through four public resolvers.
+2. **Stage:** ✅ a dedicated `doctortracker` user, root-owned release directories, and secrets generated on the server. Locked `npm ci` installs and the 52-second frontend build ran in a CPU- and memory-capped unit.
+3. **Migrate:** ✅ a trial restore into a staging database, then a write-frozen final restore into `doctor_tracker`. Counts, indexes, references, and per-collection BSON hashes matched Atlas exactly. The destructive seed never ran.
+4. **Cut over:** ✅ only the two Doctor Tracker vhosts were added, each Nginx change passed `nginx -t`, and every reload was graceful. Unknown hosts are still rejected.
+5. **Accept:** ✅ external HTTPS checks, 27 loopback API/BFF checks, and 15 real-browser checks (desktop and 390 px mobile). All 50 existing-site probes still matched the baseline, and a backup restore drill succeeded.
 
-A `nip.io` address contains the public IP in encoded form. It avoids using a subdomain of any existing website, but worldwide availability still requires external DNS, HTTPS, and network checks after deployment.
+### Shipping a new release
+
+Only committed code ships. Create a tarball with `git archive --format=tar.gz -o web.tar.gz HEAD -- . ':(exclude)*.pdf'`, copy it to the VPS, then run `sudo doctor-tracker-release deploy web ~/web.tar.gz`. The tool builds the release as the app user and switches the `current` symlink atomically. It restarts only `doctor-tracker-web`, waits for `/login` to answer, and rolls back automatically on failure. `sudo doctor-tracker-release rollback web` returns to the previous release.
+
+A `nip.io` address encodes the public IP. If the VPS IP ever changes, both hostnames, the certificate, and the API's CORS origin must change together.
 
 ---
 
@@ -1861,10 +1865,10 @@ A `nip.io` address contains the public IP in encoded form. It avoids using a sub
 ````markdown
 # 🩺 Doctor Tracker — Frontend
 
-<badges> · **Planned live:** https://doctor-tracker.58def4e4.nip.io · **API:** https://doctor-tracker-api.58def4e4.nip.io/api/docs
+<badges> · **Live:** https://doctor-tracker.58def4e4.nip.io · **API:** https://doctor-tracker-api.58def4e4.nip.io/api/docs
 
 > **Demo:** Admin `admin@doctortracker.test` / `Admin@12345` · Viewer (read-only) `viewer@doctortracker.test` / `Viewer@12345`
-> 🖥️ Planned for a Hostinger KVM 4 VPS: Nginx + Let's Encrypt · systemd · MongoDB 8 (authentication, verified backups).
+> 🖥️ Self-hosted on a Hostinger KVM 4 VPS: Nginx + Let's Encrypt · systemd · MongoDB 8 (authentication, verified backups).
 
 ## 1. Description
 <one-paragraph elevator pitch: who it's for, what it does, what makes it fast and secure>
@@ -1934,7 +1938,7 @@ Features · Project structure · Deployment (Hostinger VPS: Nginx, systemd, TLS)
 
 - [ ] Both repos are **public** (or reviewers are invited) · default branch `main` · no `.env` committed (`git log -p | findstr MONGODB_URI` → nothing)
 - [ ] Both READMEs have the 5 sections, live links, demo credentials and screenshots
-- [ ] Live URLs tested in **incognito** · both new systemd services healthy · certificates valid on both `nip.io` names · Doctor Tracker backup verified
+- [x] Live URLs tested in a fresh browser profile · both new systemd services healthy · certificate valid on both `nip.io` names · Doctor Tracker backup and restore drill verified (22 Oct 2026, [deployment record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md))
 - [ ] Assignment PDF **not** in the repo · no secrets or TODOs left in code · `npm run lint` clean in both repos
 
 ### 14.2 Email template
@@ -2004,7 +2008,7 @@ Best regards,
 | Scale to millions of patients? | Keyset pagination, Atlas Search, pre-aggregated daily stats via `$merge`, Redis for cache/rate limits, read replicas for analytics. |
 | What happens when the token expires? | The API returns 401 → BFF → client redirects to `/login?expired=1`. Next step would be refresh-token rotation. |
 | What does Cache Components change? | Static shells prerender instantly. Anything reading cookies/searchParams streams inside `<Suspense>`. `'use cache: private'` makes the session read prefetchable. |
-| How is it deployed? | The [current plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) uses two new Nginx sites and two isolated systemd services on the Hostinger VPS, with a separately authenticated MongoDB database. Only HTTPS and SSH are public; Doctor Tracker gets its own verified backup. Existing sites remain untouched. |
+| How is it deployed? | It runs on a Hostinger KVM 4 VPS behind two new Nginx sites with Let's Encrypt TLS. Two sandboxed systemd services listen on loopback, backed by a separately authenticated MongoDB database migrated byte-for-byte from Atlas. Only SSH, HTTP, and HTTPS are public, and the database gets nightly verified backups. Releases are health-checked and roll back automatically, and every other site on the server was verified untouched ([record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md)). |
 
 ---
 
@@ -2019,9 +2023,9 @@ Best regards,
 | *Current-time prerender* error | `useQuery`/`dehydrate()` running during prerender | Keep data views inside `<Suspense>`; don't use stock `dehydrate()` |
 | `useSearchParams` / nuqs bailout error | Client URL hook rendered during prerender | Wrap that component in `<Suspense>` |
 | Redirect loop `/login` ↔ `/dashboard` | `JWT_SECRET`/`ISSUER`/`AUDIENCE` differ between the apps | Make them identical in both environments |
-| Login works in development, fails on the VPS | No HTTPS (the `Secure` cookie is dropped) or environment variables not loaded | Follow the deployment plan's certificate and secret checks; rebuild and restart only the affected Doctor Tracker service |
-| `503 UPSTREAM_UNAVAILABLE` | API process down or crashed | Check the new Doctor Tracker API service logs and its database connection |
-| `502 Bad Gateway` from Nginx | Next.js / Express service unavailable on its private binding | Check the two Doctor Tracker services, private listeners, and `sudo nginx -t` without changing existing sites |
+| Login works in development, fails on the VPS | No HTTPS (the `Secure` cookie is dropped), or the JWT settings in `/etc/doctor-tracker/web.env` and `api.env` differ | Check the certificate and make the JWT values identical, then `sudo systemctl restart doctor-tracker-web` (only that service) |
+| `503 UPSTREAM_UNAVAILABLE` | API process down or crashed | `systemctl status doctor-tracker-api` · `journalctl -u doctor-tracker-api` · `curl -s http://127.0.0.1:4100/api/v1/health` on the VPS |
+| `502 Bad Gateway` from Nginx | Next.js / Express service unavailable on its loopback port | `systemctl status doctor-tracker-web doctor-tracker-api`; `sudo doctor-tracker-release rollback web` if a new release is at fault. Never restart other sites' services |
 | Pages appear all at once instead of streaming | Nginx is buffering responses | Keep `proxy_buffering off` and the `X-Accel-Buffering: no` header ([F1.3](#f1)) |
 | Dialog is open again after navigating back | `<Activity>` preserved the state | Drive dialogs from URL params |
 | Previous user's data after logout | Activity + query cache | Logout = `queryClient.clear()` + `window.location.replace("/login")` |
@@ -2046,8 +2050,9 @@ Best regards,
 | Format | `npm run format` · `npm run format:check` |
 | Add a shadcn component | `.\node_modules\.bin\shadcn add <name>` |
 | Review pending install scripts | `npm approve-scripts --allow-scripts-pending` |
-| VPS redeploy | Follow the isolated release, service restart, and rollback procedure in the [deployment plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) |
-| VPS status / logs | Check the two Doctor Tracker systemd services and their journals, as described in the deployment plan |
+| VPS redeploy | `sudo doctor-tracker-release deploy web ~/web.tar.gz` (tarball from `git archive`; see the [deployment record](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md)) |
+| VPS rollback / releases | `sudo doctor-tracker-release rollback web` · `sudo doctor-tracker-release list web` |
+| VPS status / logs | `systemctl status doctor-tracker-web doctor-tracker-api` · `journalctl -u doctor-tracker-web` · `/var/log/nginx/doctor-tracker-web.*.log` |
 
 ### 17.2 Local Next.js docs worth opening (they match the installed version)
 
@@ -2076,7 +2081,7 @@ Best regards,
 | F6 Patients | ⬜ |
 | F7 Dashboard | ⬜ |
 | F8 Polish | ⬜ |
-| H Deploy | ⬜ |
+| H Deploy | ✅ 22 Oct 2026 |
 | D README & screenshots | ⬜ |
 | S Submitted | ⬜ |
 
