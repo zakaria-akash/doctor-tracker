@@ -24,6 +24,9 @@
 > [!NOTE]
 > **In plain English:** this is the web interface for a clinic operations tracker. Authorized staff can browse doctors and patients, keep assignments up to date, and review operational trends. It is a coordination tool—not an electronic medical record or a substitute for clinical judgment.
 
+> [!TIP]
+> **Planned public addresses:** [web app](https://dt.58def4e4.nip.io) · [API](https://api.58def4e4.nip.io). These are not live until deployment and external HTTPS checks are complete. See the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md); existing VPS websites must remain untouched.
+
 ## 🧭 At a glance
 
 | 👥 Who uses it                              | ✨ What they can do                                                       | 🔐 Who can change records                                |
@@ -64,7 +67,7 @@
 ### Prerequisites
 
 - Node.js `24.x` and npm
-- The companion backend API running at `http://localhost:4000` (see its repository README for setup)
+- The companion backend API running in development mode (see its repository README for setup)
 - A backend development database configured and seeded if you want realistic demo records
 
 ### Start the frontend
@@ -89,7 +92,7 @@ Set `API_URL` to the backend API base URL. Configure the same `JWT_SECRET`, `JWT
 npm run dev
 ```
 
-Open **<http://localhost:3000>**. Sign-in and live records require the backend to be available.
+Open the URL printed by `npm run dev`. Sign-in and live records require the backend to be available.
 
 | Command                | What it does                            |
 | ---------------------- | --------------------------------------- |

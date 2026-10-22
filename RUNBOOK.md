@@ -13,9 +13,9 @@
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)
 ![Recharts](https://img.shields.io/badge/Recharts-3-22B5BF?style=for-the-badge)
 ![Hostinger VPS](https://img.shields.io/badge/Hosting-Hostinger_KVM_4_VPS-673DE6?style=for-the-badge&logo=hostinger&logoColor=white)
-![Nginx](https://img.shields.io/badge/Nginx_%2B_PM2-self--hosted-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx_%2B_systemd-self--hosted-009639?style=for-the-badge&logo=nginx&logoColor=white)
 
-📗 **Companion runbook:** [`D:\projects\doctor-tracker-backend\RUNBOOK.md`](../doctor-tracker-backend/RUNBOOK.md) — Express 5 · MongoDB 8 · Hostinger VPS (server setup, database migration)
+📗 **Companion runbook:** [backend RUNBOOK.md](https://github.com/zakaria-akash/doctor-tracker-backend/blob/main/RUNBOOK.md) — Express 5 · MongoDB 8 · Hostinger VPS. For current hosting steps, use the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md).
 
 | 🎯 [Mission](#mission) | 🏗️ [Architecture](#architecture) | 🗓️ [Plan](#plan) | 🛠️ [Build F1→F8](#f1) | 🚀 [Deploy](#deploy) | 📝 [README](#readme) | 📮 [Submit](#submit) | 🎤 [Interview](#interview) |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -70,16 +70,16 @@
 > **3 — Hard deadline: 48 hours after the email arrived.** Write your exact cut-off here 👉 `__________`. Submit with **Reply All on the same email thread** — never start a new thread.
 
 > [!IMPORTANT]
-> **Hosting decision: everything runs on your Hostinger KVM 4 VPS** (Ubuntu 24.04 · 4 vCPU · 16 GB RAM · 200 GB NVMe). Nginx + Let's Encrypt sit in front, Next.js and Express run under PM2, and **MongoDB 8 is self-hosted on the same server**, with the data migrated from Atlas using `mongodump` / `mongorestore`. Atlas is used only during development. Server setup and the database migration live in the backend runbook **B9**; the frontend part is [Phase H](#deploy).
+> **Hosting decision:** Doctor Tracker is planned for the existing Hostinger KVM 4 VPS, using two new `nip.io` names, separate systemd services, Nginx + HTTPS, and an isolated MongoDB database migrated from Atlas. The [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) supersedes this runbook's original fresh-server deployment assumptions; deployment has not started.
 
 ### 0.3 Deliverables
 
 | 📦 Deliverable | Value (fill in) |
 | --- | --- |
-| 🟦 Frontend GitHub repo | `https://github.com/<you>/doctor-tracker-frontend` |
-| 🟩 Backend GitHub repo | `https://github.com/<you>/doctor-tracker-backend` |
-| 🌐 Live frontend URL | `https://app.yourdomain.com` (Hostinger KVM 4 VPS) |
-| 🔌 Live backend API URL | `https://api.yourdomain.com/api/v1` (+ `/api/docs`) |
+| 🟦 Frontend GitHub repo | `https://github.com/zakaria-akash/doctor-tracker` |
+| 🟩 Backend GitHub repo | `https://github.com/zakaria-akash/doctor-tracker-backend` |
+| 🌐 Planned frontend URL | `https://dt.58def4e4.nip.io` (Hostinger KVM 4 VPS) |
+| 🔌 Planned backend API URL | `https://api.58def4e4.nip.io/api/v1` (+ `/api/docs`) |
 | 🔑 Demo credentials | Admin `admin@doctortracker.test` / `Admin@12345` · Viewer `viewer@doctortracker.test` / `Viewer@12345` |
 
 ### 0.4 Requirements traceability matrix
@@ -106,7 +106,7 @@ Every line of the brief, mapped to how it's met and where. Use it as the final Q
 | 6 | Next.js frontend + Express backend + MongoDB + REST | Two repos · `/api/v1` resources · proper verbs and status codes | both runbooks | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
 | 6 | State management & data-fetching strategy | TanStack Query (server state) · nuqs (URL state) · RSC for the dashboard | [F3](#f3) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
 | 7 | README with the 5 mandatory sections | Same section names, same order as the PDF, in both repos | [D](#readme) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
-| ✉️ | Backend on Render/Vercel/**own VPS** · frontend hosted · 4 links · Reply All · runs locally in the interview | Both apps + MongoDB on the Hostinger KVM 4 VPS (Nginx · PM2 · HTTPS) · optional Vercel mirror · email template · interview checklist | [H](#deploy) · [S](#submit) · [🎤](#interview) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
+| ✉️ | Backend on Render/Vercel/**own VPS** · frontend hosted · 4 links · Reply All · runs locally in the interview | Both apps + MongoDB planned for the Hostinger KVM 4 VPS (Nginx · systemd · HTTPS) · email template · interview checklist | [H](#deploy) · [S](#submit) · [🎤](#interview) | ![MUST](https://img.shields.io/badge/MUST-DC2626?style=flat-square) |
 
 ### 0.5 How the evaluation criteria map to this plan
 
@@ -133,7 +133,7 @@ Every line of the brief, mapped to how it's met and where. Use it as the final Q
 flowchart LR
   user(["Admin / Viewer<br/>Browser"]):::actor
 
-  subgraph web["Hostinger VPS · Nginx → Next.js 16 (PM2) · frontend repo"]
+  subgraph web["Hostinger VPS · Nginx → Next.js 16 (systemd) · frontend repo"]
     proxy["proxy.js<br/>optimistic JWT check"]:::next
     rsc["Server Components<br/>Dashboard · Doctor profile"]:::next
     actions["Server Actions<br/>login · logout"]:::next
@@ -141,13 +141,13 @@ flowchart LR
     client["Client Components<br/>TanStack Query · nuqs · RHF"]:::client
   end
 
-  subgraph apiBox["Same VPS · Express 5 (PM2, 127.0.0.1:4000) · backend repo"]
+  subgraph apiBox["Same VPS · Express 5 (private service) · backend repo"]
     api["REST API /api/v1<br/>helmet · cors · zod · rate limit"]:::api
     auth["JWT verify (jose)<br/>RBAC admin / viewer"]:::api
     svc["Services<br/>search · filter · paginate · aggregate"]:::api
   end
 
-  db[("MongoDB 8 on the VPS<br/>127.0.0.1 · auth · nightly backups<br/>compound + multikey indexes")]:::db
+  db[("MongoDB 8 on the VPS<br/>private access · auth · verified backups<br/>compound + multikey indexes")]:::db
 
   user -->|HTTPS| proxy --> rsc
   user -->|form submit| actions
@@ -167,8 +167,8 @@ flowchart LR
 #### In plain words
 
 1. 🔐 The browser **never talks to Express directly**. It only calls its own origin (`/api/*`), and Next.js forwards the call to Express with `Authorization: Bearer <JWT>`.
-2. 🍪 The JWT lives in a **first-party `httpOnly` cookie** on `app.yourdomain.com`, so JavaScript can't read it and no cross-origin cookie rules come into play.
-3. 🖥️ **Server Components** (dashboard, doctor profile) and the BFF reach Express over **loopback** (`127.0.0.1:4000`) on the same VPS: no public network hop, no TLS overhead, and port 4000 is never exposed.
+2. 🍪 The JWT lives in a **first-party `httpOnly` cookie** on `dt.58def4e4.nip.io`, so JavaScript can't read it and no cross-origin cookie rules come into play.
+3. 🖥️ **Server Components** (dashboard, doctor profile) and the BFF reach Express over a **private service binding** on the same VPS: no public network hop, and the API service port is never exposed directly.
 4. ⚛️ **Client Components** (the interactive tables) use **TanStack Query** through the BFF for caching, smooth pagination and optimistic deletes.
 
 ### 1.2 Auth + data request flow
@@ -177,7 +177,7 @@ flowchart LR
 sequenceDiagram
   autonumber
   actor U as Admin (browser)
-  participant N as Next.js (VPS, PM2)
+  participant N as Next.js (VPS, systemd)
   participant E as Express (VPS, loopback)
   participant M as MongoDB (VPS)
   U->>N: Submit login form (Server Action)
@@ -316,7 +316,7 @@ gantt
 - [ ] **GitHub** — two public repos: `doctor-tracker-frontend` and `doctor-tracker-backend`
 - [ ] **MongoDB Atlas** — free cluster for **development** (backend runbook, phase B0); production data moves to the VPS later
 - [ ] **Hostinger KVM 4 VPS** — Ubuntu 24.04 LTS, your SSH key added, IPv4 noted (backend runbook, B9)
-- [ ] **A domain** with two A records pointing at the VPS IP: `app.yourdomain.com` and `api.yourdomain.com` (required for HTTPS)
+- [ ] **Public DNS and HTTPS:** verify that `dt.58def4e4.nip.io` and `api.58def4e4.nip.io` resolve globally to the VPS and qualify for certificates; no existing website domain is used.
 
 ### 3.3 Tooling
 
@@ -327,7 +327,7 @@ gantt
 
 > [!CAUTION]
 > **Machine-specific gotcha: `npx shadcn …` fails with `EALLOWSCRIPTS` on this PC.**
-> Your user-level `~/.npmrc` contains `allow-scripts=node-pty`. `npx` passes that to child processes as `npm_config_allow_scripts`, and npm 11.17 forbids that flag inside project installs, so shadcn's internal `npm install` aborts.
+> A user-level npm configuration can contain `allow-scripts=node-pty`. `npx` passes that to child processes as `npm_config_allow_scripts`, and npm 11.17 forbids that flag inside project installs, so shadcn's internal `npm install` aborts.
 > ✅ **Fix (verified):** run the **local** binary directly — `.\node_modules\.bin\shadcn …` (PowerShell) or `./node_modules/.bin/shadcn …` (Git Bash). Don't use `npm run` either, because it injects the same variable.
 > Optional permanent fix: `npm config delete allow-scripts --location=user` (only if nothing else relies on it).
 
@@ -360,7 +360,7 @@ Create **`.env.example`** (committed) and **`.env.local`** (git-ignored) in the 
 ```dotenv
 # .env.example — Doctor Tracker frontend
 # Base URL of the Express API, including the version prefix. Server-only, never NEXT_PUBLIC_.
-API_URL=http://localhost:4000/api/v1
+API_URL=<copy-the-backend-development-base-url-here>
 
 # Must be IDENTICAL to the backend's values. Used by proxy.js / the DAL to verify the session JWT.
 JWT_SECRET=replace-with-the-same-48-byte-secret-as-the-backend
@@ -370,7 +370,7 @@ JWT_AUDIENCE=doctor-tracker-web
 
 | Variable | Exposed to the browser? | Notes |
 | --- | --- | --- |
-| `API_URL` | ❌ No | Dev: `http://localhost:4000/api/v1` · VPS: `http://127.0.0.1:4000/api/v1` (loopback). No `NEXT_PUBLIC_` prefix: the browser only calls `/api/*` |
+| `API_URL` | ❌ No | Dev: copy the API base URL printed by the backend server. VPS: use the private backend service address from the deployment plan. No `NEXT_PUBLIC_` prefix: the browser only calls `/api/*` |
 | `JWT_SECRET` | ❌ No | Generate it once (backend runbook, B1) and paste the same value into both apps |
 | `JWT_ISSUER` / `JWT_AUDIENCE` | ❌ No | Must match the backend's claims, otherwise verification fails |
 
@@ -452,7 +452,7 @@ Scripts already exist: `npm run format`, `npm run format:check`, `npm run lint`,
 ### Step F1.5 · Initialise shadcn/ui (verified commands)
 
 ```powershell
-# PowerShell, from D:\projects\doctor-tracker (use the LOCAL binary, see the F0 caution)
+# PowerShell, from the frontend repository root (use the local binary; see the F0 caution)
 .\node_modules\.bin\shadcn init --template next --base radix --preset nova --yes --no-reinstall
 
 .\node_modules\.bin\shadcn add sidebar card input label textarea select dialog alert-dialog sheet drawer `
@@ -1390,7 +1390,7 @@ export function applyServerErrors(error, setError) {
 
 ### ✅ Definition of Done — F3
 
-- [ ] Network tab shows `GET /api/doctors?...` (same-origin) — **no** request to `api.yourdomain.com` from the browser
+- [ ] Network tab shows `GET /api/doctors?...` (same-origin) — **no** request to `api.58def4e4.nip.io` from the browser
 - [ ] Typing quickly in search triggers **one** request ~350 ms after the last keystroke · URL updates too
 - [ ] Changing page keeps the previous rows visible (dimmed) until the next page arrives
 - [ ] Deleting the session cookie and clicking "Next page" sends you to `/login?expired=1`
@@ -1826,171 +1826,27 @@ export function AdmissionsChart({ data }) {
 
 <a id="deploy"></a>
 
-## 🚀 12. Phase H — Deploy to the Hostinger KVM 4 VPS + end-to-end check
-
-> ⏱️ **30 min** (after the server baseline) · **Prerequisite:** backend runbook **[B9](../doctor-tracker-backend/RUNBOOK.md#b9)** is done. That means the server is hardened, Node 24 + PM2 + Nginx + Certbot are installed, MongoDB has been migrated, and the API is live at `https://api.yourdomain.com`.
-
-```mermaid
-flowchart LR
-  b(["Browser"]):::actor -->|"HTTPS app.yourdomain.com"| n["Nginx :443<br/>TLS · proxy_buffering off"]:::edge
-  n --> w["Next.js 16 · PM2<br/>127.0.0.1:3000"]:::fe
-  w -->|"BFF + RSC over loopback"| a["Express API · PM2<br/>127.0.0.1:4000"]:::be
-  a --> m[("MongoDB 8<br/>127.0.0.1:27017")]:::db
-
-  classDef actor fill:#FEF3C7,stroke:#D97706,color:#78350F
-  classDef edge fill:#E0F2FE,stroke:#0284C7,color:#0C4A6E
-  classDef fe fill:#EDE9FE,stroke:#7C3AED,color:#3B0764
-  classDef be fill:#DCFCE7,stroke:#16A34A,color:#14532D
-  classDef db fill:#FCE7F3,stroke:#DB2777,color:#831843
-```
-
-> [!NOTE]
-> **About the email's wording.** It explicitly allows "your own paid hosting/VPS" for the backend, but asks for the frontend on a free platform "such as Vercel or Netlify". Self-hosting the frontend on the same VPS is the stronger setup, and "such as" leaves room. For zero ambiguity, add the optional **Vercel mirror** in [H.6](#h6) and list it as a second frontend link.
-
-### Step H.1 · Push and clone
-
-```powershell
-# on your laptop
-git add -A
-git commit -m "feat: doctor tracker frontend"
-git remote add origin https://github.com/<you>/doctor-tracker-frontend.git
-git push -u origin main
-```
-
-```bash
-# on the VPS, as the deploy user
-cd /var/www && git clone https://github.com/<you>/doctor-tracker-frontend.git && cd doctor-tracker-frontend
-```
-
-### Step H.2 · Production environment
-
-```bash
-nano .env.production.local     # git-ignored; loaded by `next build` and `next start`
-chmod 600 .env.production.local
-```
-
-```dotenv
-# Same server, so call the API over loopback: no TLS hop and never exposed publicly
-API_URL=http://127.0.0.1:4000/api/v1
-# Identical to the backend's .env
-JWT_SECRET=<the shared secret>
-JWT_ISSUER=doctor-tracker-api
-JWT_AUDIENCE=doctor-tracker-web
-```
-
-### Step H.3 · Build and run under PM2
-
-<details>
-<summary>📄 <b>ecosystem.config.cjs</b> (commit it in the frontend repo root)</summary>
-
-```js
-// PM2 loads this file with require(), hence the .cjs extension
-module.exports = {
-  apps: [
-    {
-      name: "doctor-tracker-web",
-      cwd: __dirname,
-      script: "node_modules/next/dist/bin/next",
-      args: "start -H 127.0.0.1 -p 3000", // only Nginx can reach it
-      instances: 1,
-      exec_mode: "fork",
-      max_memory_restart: "1G",
-      env: { NODE_ENV: "production" },
-      time: true,
-    },
-  ],
-};
-```
-
-</details>
-
-```bash
-npm ci                                  # dev dependencies are needed for the build (Tailwind loader, React Compiler)
-npm run build                           # ~1–2 min on KVM 4
-pm2 start ecosystem.config.cjs && pm2 save
-curl -I http://127.0.0.1:3000/login     # expect HTTP 200
-```
-
-### Step H.4 · Nginx + HTTPS for `app.yourdomain.com`
-
-<details>
-<summary>📄 <b>/etc/nginx/sites-available/doctor-tracker-web</b></summary>
-
-```nginx
-upstream doctor_tracker_web {
-    server 127.0.0.1:3000;
-    keepalive 32;
-}
-
-server {
-    listen 80;
-    listen [::]:80;
-    server_name app.yourdomain.com;
-
-    client_max_body_size 1m;
-
-    location / {
-        proxy_pass http://doctor_tracker_web;
-        proxy_http_version 1.1;
-        proxy_set_header Connection "";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_buffering off;    # stream Suspense / RSC chunks as they render (Next 16 self-hosting guide)
-        proxy_read_timeout 60s;
-    }
-}
-```
-
-</details>
-
-```bash
-sudo ln -s /etc/nginx/sites-available/doctor-tracker-web /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot --nginx -d app.yourdomain.com --redirect -m you@example.com --agree-tos -n
-```
+## 🚀 12. Phase H — Deploy to the Hostinger VPS
 
 > [!IMPORTANT]
-> **HTTPS is not optional.** In production the session cookie is `Secure`, so over plain HTTP the browser silently drops it and every login appears to fail. Certbot also installs auto-renewal (`systemctl list-timers | grep certbot`).
+> **Use the [VPS deployment and migration plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) as the sole deployment procedure.** This runbook began as a build guide for a fresh server; its earlier PM2, port, and example-domain assumptions do not apply to the VPS that already hosts other websites. Do not deploy until the owner approves the plan.
 
-> [!TIP]
-> Next.js already serves `/_next/static/*` with `Cache-Control: public, max-age=31536000, immutable` and compresses its responses, so Nginx only needs to proxy. Caching for `'use cache'` works out of the box for a **single `next start` instance with a persistent disk**, which is exactly this setup.
-
-### Step H.5 · Redeploys
-
-```bash
-cd /var/www/doctor-tracker-frontend \
-  && git pull --ff-only && npm ci && npm run build \
-  && pm2 reload doctor-tracker-web --update-env
-```
-
-The build overwrites `.next` while the old process is still serving, so redeploy at a quiet moment (a few seconds of errors are possible mid-build).
-
-<a id="h6"></a>
-
-### Step H.6 · Optional Vercel mirror (only to match the email's "free platform" wording)
-
-1. **vercel.com → Add New → Project → Import** `doctor-tracker-frontend`.
-2. Environment variables (Production): `API_URL=https://api.yourdomain.com/api/v1` (public HTTPS this time) and the same three `JWT_*` values → **Deploy**.
-3. Add the Vercel URL to the backend's `CORS_ORIGINS` (harmless hygiene) and list it in the email as a mirror.
-
-### Step H.7 · Production smoke test (incognito, desktop + phone)
-
-| ✔ | Check |
+| Public entry point | Planned address |
 | --- | --- |
-| ☐ | `https://api.yourdomain.com/api/v1/health` → `200` · `https://app.yourdomain.com` shows a valid padlock · `http://` redirects to `https://` |
-| ☐ | On the VPS: `pm2 status` → both apps online · `ss -tlnp` → 3000 / 4000 / 27017 bound to `127.0.0.1` only · `sudo ufw status` → 22 / 80 / 443 |
-| ☐ | Login page loads fast · demo buttons fill credentials · admin login lands on the dashboard |
-| ☐ | Dashboard: the skeleton paints instantly, then KPIs and charts **stream in** (if everything appears at once, Nginx is buffering) |
-| ☐ | Doctors: search "card" · filter · date range · pagination · create (and a duplicate-email error) |
-| ☐ | Doctor profile: add a patient · remove a patient · counts update |
-| ☐ | Patients: every filter · edit (reassign doctor) · delete |
-| ☐ | Viewer account: read-only everywhere |
-| ☐ | Logout → back button shows nothing · deep link while signed out → login → back to the deep link |
-| ☐ | Phone (real device or DevTools): navigation drawer, cards, bottom-sheet dialogs |
-| ☐ | Dark mode · 404 page · refresh on a filtered URL keeps the state |
-| ☐ | `sudo reboot` → everything comes back on its own (PM2 startup hook, `mongod` enabled) |
+| Frontend | [https://dt.58def4e4.nip.io](https://dt.58def4e4.nip.io) |
+| Backend API | [https://api.58def4e4.nip.io](https://api.58def4e4.nip.io) |
+
+The full plan uses separate app services, private connections between services, an isolated Doctor Tracker database, and two **new** Nginx site definitions. Existing websites, site files, services, databases, certificates, and backup jobs must remain untouched.
+
+### Deployment gates
+
+1. **Before:** confirm the VPS snapshot, current site health, free resources, unused service ports, public DNS resolution, and HTTPS certificate eligibility.
+2. **Stage:** prepare separate release directories and service accounts, install locked dependencies, build the frontend, and keep production secrets outside Git.
+3. **Migrate:** restore the Atlas `doctor_tracker_dev` database into an isolated staging database; validate records, references, indexes, and images before a write-frozen final restore. Never run the destructive demo seed in production.
+4. **Cut over:** enable only the two Doctor Tracker site definitions; validate Nginx configuration before reload and preserve the existing unknown-host rejection behavior.
+5. **Accept:** test both public addresses from outside the VPS, verify login and core flows, compare the health of **every existing site**, confirm backups, and be ready to roll back only Doctor Tracker changes.
+
+A `nip.io` address contains the public IP in encoded form. It avoids using a subdomain of any existing website, but worldwide availability still requires external DNS, HTTPS, and network checks after deployment.
 
 ---
 
@@ -2005,16 +1861,16 @@ The build overwrites `.next` while the old process is still serving, so redeploy
 ````markdown
 # 🩺 Doctor Tracker — Frontend
 
-<badges> · **Live:** https://app.yourdomain.com · **API:** https://api.yourdomain.com/api/docs
+<badges> · **Planned live:** https://dt.58def4e4.nip.io · **API:** https://api.58def4e4.nip.io/api/docs
 
 > **Demo:** Admin `admin@doctortracker.test` / `Admin@12345` · Viewer (read-only) `viewer@doctortracker.test` / `Viewer@12345`
-> 🖥️ Self-hosted on a Hostinger KVM 4 VPS: Nginx + Let's Encrypt · PM2 · MongoDB 8 (authentication, nightly backups).
+> 🖥️ Planned for a Hostinger KVM 4 VPS: Nginx + Let's Encrypt · systemd · MongoDB 8 (authentication, verified backups).
 
 ## 1. Description
 <one-paragraph elevator pitch: who it's for, what it does, what makes it fast and secure>
 
 ## 2. Setup Guide
-Prerequisites (Node 24, the backend running locally) → clone → `npm ci` → `cp .env.example .env.local` → fill values → `npm run dev` → open http://localhost:3000. Table of npm scripts.
+Prerequisites (Node 24, the backend running in development mode) → clone → `npm ci` → `cp .env.example .env.local` → fill values → `npm run dev` → open the URL printed by the dev server. Table of npm scripts.
 
 ## 3. System Architecture
 <mermaid diagram from §1.1> + 5 bullets on the data flow (browser → BFF → Express → Atlas, auth layers, caching).
@@ -2030,7 +1886,7 @@ Prerequisites (Node 24, the backend running locally) → clone → `npm ci` → 
 | … | … |
 
 ## Extras
-Features · Project structure · Deployment (Hostinger VPS: Nginx, PM2, TLS) · Performance & accessibility · Security · Assumptions · Future improvements · Author
+Features · Project structure · Deployment (Hostinger VPS: Nginx, systemd, TLS) · Performance & accessibility · Security · Assumptions · Future improvements · Author
 ````
 
 ### 13.2 Technical Decision drafts (adapt them, keep them honest)
@@ -2038,7 +1894,7 @@ Features · Project structure · Deployment (Hostinger VPS: Nginx, PM2, TLS) · 
 <details>
 <summary>🧠 <b>Decision 1 — BFF + httpOnly cookie, not localStorage and not direct browser→API calls</b></summary>
 
-- **Context.** The frontend (`app.yourdomain.com`) and the API (`api.yourdomain.com`) are separate apps on different origins. Calling the API straight from the browser would need CORS plus a cookie shared across subdomains, or a token in `localStorage`, which any injected script can read and Server Components can't see (ruling out server-side auth checks). The design also keeps working when the frontend is mirrored on another host such as Vercel, where a cookie set by the API would become a blocked *third-party* cookie.
+- **Context.** The frontend (`dt.58def4e4.nip.io`) and the API (`api.58def4e4.nip.io`) are separate apps on different origins. Calling the API straight from the browser would need CORS plus a cookie shared across subdomains, or a token in `localStorage`, which any injected script can read and Server Components can't see (ruling out server-side auth checks). The design also keeps working when the frontend is mirrored on another host such as Vercel, where a cookie set by the API would become a blocked *third-party* cookie.
 - **Decision.** Express issues a short-lived JWT. The Next.js server stores it in a first-party `httpOnly; Secure; SameSite=Lax` cookie. The browser calls only same-origin `/api/*` (a Route Handler BFF), which attaches `Authorization: Bearer`. Server Components call Express directly.
 - **Consequences.** ✅ XSS can't exfiltrate the token · ✅ no CORS or third-party-cookie problems · ✅ `proxy.js` can gate routes before render · ✅ Express stays a clean, stateless Bearer API that is easy to test with Swagger and curl. ⚠️ One extra hop (over loopback on the VPS, ≈ 1 ms) · ⚠️ the JWT secret is shared with the Next server for local verification (server-only env vars, `iss`/`aud` claims; RS256 with a public key would remove the shared secret).
 
@@ -2078,7 +1934,7 @@ Features · Project structure · Deployment (Hostinger VPS: Nginx, PM2, TLS) · 
 
 - [ ] Both repos are **public** (or reviewers are invited) · default branch `main` · no `.env` committed (`git log -p | findstr MONGODB_URI` → nothing)
 - [ ] Both READMEs have the 5 sections, live links, demo credentials and screenshots
-- [ ] Live URLs tested in **incognito** · `pm2 status` all online · certificates valid on both subdomains · last night's DB backup exists
+- [ ] Live URLs tested in **incognito** · both new systemd services healthy · certificates valid on both `nip.io` names · Doctor Tracker backup verified
 - [ ] Assignment PDF **not** in the repo · no secrets or TODOs left in code · `npm run lint` clean in both repos
 
 ### 14.2 Email template
@@ -2090,18 +1946,18 @@ Dear Hiring Team,
 
 Thank you for the opportunity. Please find my Doctor Tracker submission below.
 
-• Live frontend:    https://app.yourdomain.com
-• Live backend API: https://api.yourdomain.com/api/v1
-  (health: /api/v1/health · interactive docs: https://api.yourdomain.com/api/docs)
-• Frontend repository: https://github.com/<you>/doctor-tracker-frontend
-• Backend repository:  https://github.com/<you>/doctor-tracker-backend
+• Live frontend:    https://dt.58def4e4.nip.io
+• Live backend API: https://api.58def4e4.nip.io/api/v1
+  (health: /api/v1/health · interactive docs: https://api.58def4e4.nip.io/api/docs)
+• Frontend repository: https://github.com/zakaria-akash/doctor-tracker
+• Backend repository:  https://github.com/zakaria-akash/doctor-tracker-backend
 
 Demo credentials
 • Admin (full access):   admin@doctortracker.test / Admin@12345
 • Viewer (read-only, demonstrates role-based authorization): viewer@doctortracker.test / Viewer@12345
 
 Hosting: both apps and the MongoDB database are self-hosted on a Hostinger KVM 4 VPS
-(Ubuntu 24.04, Nginx + Let's Encrypt, PM2, MongoDB 8 with authentication and nightly backups).
+(Ubuntu 24.04, Nginx + Let's Encrypt, systemd, MongoDB 8 with authentication and verified backups).
 
 Highlights: Next.js 16 (Cache Components, React Compiler), BFF with httpOnly-cookie sessions,
 TanStack Query + URL-synced filters, Express 5 + Zod validation, index-backed search with
@@ -2124,8 +1980,8 @@ Best regards,
 
 - [ ] Fresh clone of both repos into a temp folder → `npm ci` → `.env` from `.env.example` → `npm run dev` (backend first) → it works
 - [ ] Laptop charged, Node 24, VS Code, Chrome, both repos open in separate windows
-- [ ] `ssh deploy@<VPS-IP>` works · you can show `pm2 status`, the Nginx site files and last night's backup
-- [ ] **Offline fallback:** local MongoDB (`docker run -d --name dt-mongo -p 27017:27017 mongo:8` or MongoDB Community Server) → set `MONGODB_URI=mongodb://127.0.0.1:27017/doctor_tracker` → `npm run seed` → run both apps
+- [ ] Approved VPS SSH access works · you can show the two Doctor Tracker systemd services, their Nginx site files, and the latest verified backup without changing other sites
+- [ ] **Offline fallback:** run a development MongoDB container or MongoDB Community Server → set `MONGODB_URI` to the private address provided by that database → `npm run seed` in the disposable development database only → run both apps
 
 ### 15.2 Three-minute demo script
 
@@ -2148,7 +2004,7 @@ Best regards,
 | Scale to millions of patients? | Keyset pagination, Atlas Search, pre-aggregated daily stats via `$merge`, Redis for cache/rate limits, read replicas for analytics. |
 | What happens when the token expires? | The API returns 401 → BFF → client redirects to `/login?expired=1`. Next step would be refresh-token rotation. |
 | What does Cache Components change? | Static shells prerender instantly. Anything reading cookies/searchParams streams inside `<Suspense>`. `'use cache: private'` makes the session read prefetchable. |
-| How is it deployed? | One Hostinger KVM 4 VPS: Nginx terminates TLS and proxies to Next.js and Express (PM2, bound to 127.0.0.1). MongoDB 8 runs locally with auth, the firewall allows only 22/80/443, and `mongodump` backs up nightly. |
+| How is it deployed? | The [current plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) uses two new Nginx sites and two isolated systemd services on the Hostinger VPS, with a separately authenticated MongoDB database. Only HTTPS and SSH are public; Doctor Tracker gets its own verified backup. Existing sites remain untouched. |
 
 ---
 
@@ -2163,9 +2019,9 @@ Best regards,
 | *Current-time prerender* error | `useQuery`/`dehydrate()` running during prerender | Keep data views inside `<Suspense>`; don't use stock `dehydrate()` |
 | `useSearchParams` / nuqs bailout error | Client URL hook rendered during prerender | Wrap that component in `<Suspense>` |
 | Redirect loop `/login` ↔ `/dashboard` | `JWT_SECRET`/`ISSUER`/`AUDIENCE` differ between the apps | Make them identical in both environments |
-| Login works locally, fails on the VPS | No HTTPS (the `Secure` cookie is dropped) or env vars not loaded | Run Certbot for the subdomain · put the vars in `.env.production.local` · `npm run build`, then `pm2 reload doctor-tracker-web --update-env` |
-| `503 UPSTREAM_UNAVAILABLE` | API process down or crashed | `pm2 status` · `pm2 logs doctor-tracker-api` · `systemctl status mongod` |
-| `502 Bad Gateway` from Nginx | Next.js / Express not listening on `127.0.0.1:3000` / `:4000` | `pm2 status` · `ss -tlnp` · `sudo nginx -t` |
+| Login works in development, fails on the VPS | No HTTPS (the `Secure` cookie is dropped) or environment variables not loaded | Follow the deployment plan's certificate and secret checks; rebuild and restart only the affected Doctor Tracker service |
+| `503 UPSTREAM_UNAVAILABLE` | API process down or crashed | Check the new Doctor Tracker API service logs and its database connection |
+| `502 Bad Gateway` from Nginx | Next.js / Express service unavailable on its private binding | Check the two Doctor Tracker services, private listeners, and `sudo nginx -t` without changing existing sites |
 | Pages appear all at once instead of streaming | Nginx is buffering responses | Keep `proxy_buffering off` and the `X-Accel-Buffering: no` header ([F1.3](#f1)) |
 | Dialog is open again after navigating back | `<Activity>` preserved the state | Drive dialogs from URL params |
 | Previous user's data after logout | Activity + query cache | Logout = `queryClient.clear()` + `window.location.replace("/login")` |
@@ -2184,14 +2040,14 @@ Best regards,
 
 | Task | Command |
 | --- | --- |
-| Dev server | `npm run dev` → `http://localhost:3000` |
+| Dev server | `npm run dev` → open the URL printed by the dev server |
 | Production build / run | `npm run build` · `npm start` |
 | Lint / fix | `npm run lint` · `npm run lint:fix` |
 | Format | `npm run format` · `npm run format:check` |
 | Add a shadcn component | `.\node_modules\.bin\shadcn add <name>` |
 | Review pending install scripts | `npm approve-scripts --allow-scripts-pending` |
-| VPS redeploy | `git pull --ff-only && npm ci && npm run build && pm2 reload doctor-tracker-web --update-env` |
-| VPS status / logs | `pm2 status` · `pm2 logs doctor-tracker-web` |
+| VPS redeploy | Follow the isolated release, service restart, and rollback procedure in the [deployment plan](VPS_DEPLOYMENT_AND_MIGRATION_PLAN.md) |
+| VPS status / logs | Check the two Doctor Tracker systemd services and their journals, as described in the deployment plan |
 
 ### 17.2 Local Next.js docs worth opening (they match the installed version)
 
