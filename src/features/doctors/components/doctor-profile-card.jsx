@@ -26,6 +26,7 @@ export function DoctorProfileCard({ doctor }) {
             <DoctorAvatar
               name={doctor.name}
               specialization={doctor.specialization}
+              photoUrl={doctor.photoUrl}
               className="size-14 text-lg"
             />
             <div className="min-w-0">

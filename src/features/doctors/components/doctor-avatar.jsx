@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 // Deterministic color choices make long doctor lists easier to scan without storing avatar data.
@@ -26,18 +30,32 @@ function colorIndex(value) {
   );
 }
 
-// Initials remain useful when the API intentionally has no profile-image field.
-export function DoctorAvatar({ name, specialization = "", className }) {
+// Local demo portraits enhance seeded profiles while initials remain a safe fallback.
+export function DoctorAvatar({ name, specialization = "", photoUrl, className }) {
+  const [failedPhotoUrl, setFailedPhotoUrl] = useState(null);
+  const showPhoto = Boolean(photoUrl) && failedPhotoUrl !== photoUrl;
+
   return (
     <span
       className={cn(
-        "grid size-10 shrink-0 place-items-center rounded-full text-sm font-bold",
+        "relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full text-sm font-bold",
         AVATAR_STYLES[colorIndex(specialization || name)],
         className,
       )}
       aria-hidden="true"
     >
-      {initials(name)}
+      {showPhoto ? (
+        <Image
+          src={photoUrl}
+          alt=""
+          fill
+          sizes="56px"
+          className="object-cover"
+          onError={() => setFailedPhotoUrl(photoUrl)}
+        />
+      ) : (
+        initials(name)
+      )}
     </span>
   );
 }

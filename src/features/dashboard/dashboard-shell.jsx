@@ -1,14 +1,17 @@
 "use client";
 
-import { Suspense, useTransition } from "react";
+import { Suspense, useEffect, useTransition } from "react";
 import { LoaderCircle } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 import { PageHeader } from "@/components/layout/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_RANGES, RANGE_LABELS } from "./ranges";
+import { readPreferences } from "@/features/settings/preferences";
 
 function RangeSelect({ startTransition, isPending }) {
+  const searchParams = useSearchParams();
   // A server navigation refreshes the single analytics request while React retains old content.
   const [range, setRange] = useQueryState(
     "range",
@@ -19,6 +22,16 @@ function RangeSelect({ startTransition, isPending }) {
       startTransition,
     }),
   );
+
+  // An explicit URL range wins; otherwise use the saved browser preference on first visit.
+  useEffect(() => {
+    if (!searchParams.has("range")) {
+      const preferredRange = readPreferences().dashboardRange;
+      if (preferredRange !== "12m") {
+        void setRange(preferredRange, { history: "replace", scroll: false });
+      }
+    }
+  }, [searchParams, setRange]);
 
   return (
     <div className="flex items-center gap-2">

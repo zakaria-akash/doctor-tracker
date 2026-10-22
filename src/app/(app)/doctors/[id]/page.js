@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { io } from "next/cache";
 import { notFound } from "next/navigation";
 import { DoctorPatientsPanel } from "@/features/doctors/components/doctor-patients-panel";
 import { DoctorProfileCard } from "@/features/doctors/components/doctor-profile-card";
@@ -21,6 +22,10 @@ export default function DoctorPage({ params }) {
 async function DoctorProfile({ id }) {
   // Reject malformed IDs locally and let the backend's authoritative 404 use the same boundary.
   if (!/^[a-f\d]{24}$/i.test(id)) notFound();
+
+  // JWT verification compares exp with the current time, so keep this request-specific work
+  // out of the prerendered shell while preserving the Suspense fallback and prefetch behavior.
+  await io();
 
   const { data: doctor } = await serverFetch(`doctors/${id}`, { allow404: true });
 

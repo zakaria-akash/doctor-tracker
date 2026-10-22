@@ -42,7 +42,11 @@ const DOCTOR_COLUMNS = [
     header: "Doctor",
     cell: (doctor) => (
       <div className="flex min-w-52 items-center gap-3">
-        <DoctorAvatar name={doctor.name} specialization={doctor.specialization} />
+        <DoctorAvatar
+          name={doctor.name}
+          specialization={doctor.specialization}
+          photoUrl={doctor.photoUrl}
+        />
         <div className="min-w-0">
           <Link
             className="font-semibold hover:text-primary hover:underline"
@@ -327,7 +331,11 @@ function DoctorMobileCard({ doctor }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <DoctorAvatar name={doctor.name} specialization={doctor.specialization} />
+        <DoctorAvatar
+          name={doctor.name}
+          specialization={doctor.specialization}
+          photoUrl={doctor.photoUrl}
+        />
         <div className="min-w-0">
           <p className="truncate font-semibold">{doctor.name}</p>
           <p className="truncate text-xs text-muted-foreground">{doctor.email}</p>
