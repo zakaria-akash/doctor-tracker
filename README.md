@@ -32,14 +32,11 @@
 
 ### The day-to-day workflow
 
-```mermaid
-flowchart LR
-  A[Sign in] --> B[Review clinic dashboard]
-  B --> C[Find a doctor or patient]
-  C --> D[Review doctor profile and assignments]
-  D --> E[Update records when authorized]
-  E --> F[Return to current analytics]
-```
+1. **Sign in** to the workspace.
+2. **Review the dashboard** for current clinic trends.
+3. **Find a doctor or patient** with search and filters.
+4. **Review profiles and assignments**, then make changes if authorized.
+5. **Return to analytics** to see the latest overview.
 
 ### What is in the workspace
 
@@ -51,21 +48,16 @@ flowchart LR
 
 ## 🏗️ How the pieces work together
 
-```mermaid
-flowchart LR
-  Person[Staff member's browser] --> Web[Next.js web application]
-  Web -->|same-origin requests| BFF[Next.js API bridge]
-  Web -->|server-rendered private reads| API[Express REST API]
-  BFF -->|verified Bearer token| API
-  API -->|validated queries and updates| DB[(MongoDB)]
-  API --> Docs[Swagger API reference]
-```
+1. A staff member uses the **Next.js website** in a browser.
+2. The website sends same-origin requests through the **Next.js API bridge**; private server-rendered reads also call the API from the server.
+3. The bridge forwards authorized requests to the **Express API**.
+4. Express validates and authorizes the request before reading or updating **MongoDB**.
+5. Developers can inspect the API contract in **Swagger** at `/api/docs`.
 
-- The browser talks to the web app. The Next.js bridge forwards API requests server-to-server.
-- A signed session is stored in an **HttpOnly cookie**; frontend JavaScript does not read the JWT.
-- Express is the final authority for identity, roles, validation, and data changes.
-- TanStack Query manages server data; URL-backed filters make useful views bookmarkable and shareable.
-- The settings page currently stores personal preferences in this browser only; it does not change shared clinic settings.
+- **Session safety:** a signed session is stored in an HttpOnly cookie; browser JavaScript cannot read the JWT.
+- **Access control:** Express is the final authority for identity, roles, validation, and data changes.
+- **Interface state:** TanStack Query manages server data; URL-backed filters make useful views bookmarkable and shareable.
+- **Settings scope:** personal preferences stay in this browser; they do not change shared clinic settings.
 
 ## 🚀 Run locally
 
