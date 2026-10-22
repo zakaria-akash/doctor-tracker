@@ -7,6 +7,7 @@ export const doctorKeys = {
   lists: () => [...doctorKeys.all, "list"],
   list: (params) => [...doctorKeys.lists(), params],
   detail: (id) => [...doctorKeys.all, "detail", id],
+  patientLists: (doctorId) => [...doctorKeys.all, doctorId, "patients"],
   patients: (doctorId, params) => [...doctorKeys.all, doctorId, "patients", params],
 };
 
@@ -80,6 +81,35 @@ export function useDeleteDoctorPatient(doctorId) {
     // The backend permanently deletes this patient record, not just its doctor association.
     mutationFn: (patientId) =>
       http(`doctors/${doctorId}/patients/${patientId}`, { method: "DELETE" }),
-    onSuccess: () => refreshPatientViews(queryClient),
+    // Remove the patient immediately from every cached nested/global list and retain rollback data.
+    onMutate: async (patientId) => {
+      const affectedPrefixes = [doctorKeys.patientLists(doctorId), ["patients", "list"]];
+      await Promise.all(
+        affectedPrefixes.map((queryKey) => queryClient.cancelQueries({ queryKey })),
+      );
+
+      const snapshots = affectedPrefixes.flatMap((queryKey) =>
+        queryClient.getQueriesData({ queryKey }),
+      );
+      for (const queryKey of affectedPrefixes) {
+        queryClient.setQueriesData({ queryKey }, (old) => {
+          if (!Array.isArray(old?.data) || !old.data.some((patient) => patient.id === patientId)) {
+            return old;
+          }
+          return {
+            ...old,
+            data: old.data.filter((patient) => patient.id !== patientId),
+            meta: old.meta && { ...old.meta, total: Math.max(0, old.meta.total - 1) },
+          };
+        });
+      }
+      return { snapshots };
+    },
+    // A failed request restores each exact cache entry that was visible before the optimistic write.
+    onError: (_error, _patientId, context) => {
+      context?.snapshots.forEach(([queryKey, data]) => queryClient.setQueryData(queryKey, data));
+    },
+    // Always reconcile pages and cross-resource totals with the backend after the request settles.
+    onSettled: () => refreshPatientViews(queryClient),
   });
 }
