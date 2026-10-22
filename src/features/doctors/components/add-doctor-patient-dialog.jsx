@@ -67,7 +67,7 @@ export function AddDoctorPatientDialog({ doctorId, doctorName, open, onOpenChang
 
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField id="patient-name" label="Patient name" error={errors.name} required>
-            <Input {...register("name")} placeholder="Rahim Uddin" autoComplete="name" autoFocus />
+            <Input {...register("name")} placeholder="Rahim Uddin" autoComplete="name" />
           </FormField>
           <FormField id="patient-age" label="Age" error={errors.age} required>
             <Input {...register("age")} type="number" min="0" max="120" inputMode="numeric" />

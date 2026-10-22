@@ -14,12 +14,12 @@ import {
   FilterSelect,
   SearchInput,
 } from "@/components/data-table";
-import { EmptyState, ResponsiveDialog } from "@/components/feedback";
+import { EmptyState, QueryFeedback, ResponsiveDialog } from "@/components/feedback";
 import { Button } from "@/components/ui/button";
 import { SPECIALIZATIONS } from "@/lib/constants";
 import { useUser } from "@/components/providers/user-provider";
 import { doctorsQuery, optionsQuery } from "@/features/doctors/api";
-import { DOCTOR_SORTS, useDoctorFilters } from "@/features/doctors/use-doctor-filters";
+import { useDoctorFilters } from "@/features/doctors/use-doctor-filters";
 import { CreateDoctorDialog } from "./create-doctor-dialog";
 import { DoctorAvatar } from "./doctor-avatar";
 
@@ -223,7 +223,7 @@ export function DoctorsView() {
 
   return (
     <section className="space-y-4" aria-label="Doctors directory">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <SearchInput
           value={filters.search}
           onChange={(value) =>
@@ -232,7 +232,7 @@ export function DoctorsView() {
           label="Search doctors"
           placeholder="Search name, specialization, hospital or email…"
         />
-        <div className="flex gap-2">
+        <div className="flex gap-2 [&>button]:flex-1 sm:[&>button]:flex-none">
           <Button
             type="button"
             variant="outline"
@@ -241,6 +241,12 @@ export function DoctorsView() {
           >
             <Filter aria-hidden="true" />
             Filters
+            {activeFilters.some(Boolean) ? (
+              <span className="rounded-full bg-primary/10 px-1.5 text-xs text-primary">
+                {activeFilters.filter(Boolean).length}
+                <span className="sr-only"> active</span>
+              </span>
+            ) : null}
           </Button>
           {canEdit ? (
             <Button type="button" onClick={() => setCreateParam(1)}>
@@ -264,12 +270,20 @@ export function DoctorsView() {
 
       <ActiveFilters filters={activeFilters} onClear={clearFilter} onClearAll={resetFilters} />
 
+      {/* A failed refresh must be visible even when React Query still has cached rows. */}
+      <QueryFeedback
+        error={doctors.isError && result ? doctors.error : null}
+        onRetry={() => doctors.refetch()}
+        isFetching={doctors.isFetching}
+      />
+
       <DataTable
         columns={DOCTOR_COLUMNS}
         data={result?.data ?? []}
         isPending={doctors.isPending}
         isFetching={doctors.isFetching}
         caption="Doctors"
+        announcement={`${result?.meta?.total ?? 0} doctors found`}
         getRowKey={(doctor) => doctor.id}
         getRowHref={(doctor) => `/doctors/${doctor.id}`}
         renderMobileCard={(doctor) => <DoctorMobileCard doctor={doctor} />}

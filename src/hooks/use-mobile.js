@@ -2,9 +2,9 @@
 
 import { useSyncExternalStore } from "react";
 
-// Keep this query aligned with Tailwind's `md` breakpoint so JavaScript and CSS
+// Keep this query aligned with Tailwind's `lg` breakpoint so JavaScript and CSS
 // agree about when the permanent sidebar should become an off-canvas drawer.
-const MOBILE_MEDIA_QUERY = "(max-width: 767px)";
+const MOBILE_MEDIA_QUERY = "(max-width: 1023px)";
 
 function subscribeToViewportChange(onStoreChange) {
   const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);

@@ -5,10 +5,12 @@ analytics. The frontend talks to a separate Express API through a same-origin Ne
 
 ## Current progress
 
-Phases 1–5 establish the frontend foundation, secure session flow, shared data layer, responsive
-application shell, and Doctors module. Doctors can be searched, filtered, paginated and created;
-each doctor profile supports adding and removing assigned patients. The Patients module and full
-analytics dashboard remain for later phases.
+Phases 1–8 cover the frontend foundation, secure session flow, responsive application shell,
+Doctors and Patients modules, and analytics dashboard. Doctors can be searched, filtered,
+paginated and created; each doctor profile supports adding and removing assigned patients.
+Patients have shareable filters, an edit sheet with doctor reassignment, and confirmed deletion.
+The dashboard displays five KPI cards and five charts from one analytics request per selected range.
+Meaningful code blocks include comments explaining state, API contracts and accessibility choices.
 
 ## Setup
 
@@ -28,8 +30,13 @@ For production, keep Next.js behind a trusted reverse proxy that sets `Host` and
 ## Current assumptions
 
 - Every patient belongs to exactly one doctor.
-- Removing a patient from a doctor's profile permanently deletes that patient record. Moving a
-  patient between doctors will be handled by the later patient-editing workflow.
+- Removing a patient permanently deletes that record. Use the Patients edit sheet to reassign
+  the patient to another doctor instead.
+- Dashboard totals for doctors, patients, critical patients and average patients per doctor are
+  all-time/current values. Admissions, trends, top doctors, conditions and statuses use the selected
+  range; the specialization chart covers all doctors. Labels distinguish these scopes.
+- Frontend work does not modify the separate backend project. Real-data testing requires a running
+  backend with matching authentication settings.
 
 ## Checks
 
@@ -40,3 +47,26 @@ npm run build
 ```
 
 Run `npm start` after a successful build to serve the production build locally.
+
+## Phases 6–8: quick manual test
+
+1. Sign in as an admin and open `/patients`. Try search, condition/status/gender, doctor, admission
+   dates and age filters. Check pagination, reset filters, and reload a filtered URL.
+2. Edit a patient: change one field, clear an optional contact field, and reassign the doctor.
+   Save and confirm the list/profile reflect the changes. Reload a URL containing `?edit=<patient-id>`
+   to check direct access to the editor. An unchanged admission date must stay unchanged.
+3. Cancel a deletion first, then confirm deletion of a disposable test patient. Interrupt the API
+   during a deletion to check error feedback and restoration of the optimistic row.
+4. Open `/dashboard` and select each date range. Check the five KPI cards, all five charts,
+   empty-data messages, and range persistence after reload.
+5. Repeat as a viewer: lists and charts remain available; create/edit/delete controls are hidden.
+6. At phone and tablet widths, test navigation/filter drawers, card layouts and edit sheets.
+   Check light/dark themes, Tab navigation, Escape, focus returning after dialogs, and reduced motion.
+
+Before deployment, run Lighthouse against `npm start` with representative data. The runbook targets
+Performance ≥ 90, Accessibility ≥ 95 and Best Practices ≥ 95; these are targets, not certified scores.
+
+Verified for this phase: lint, formatting and production build, plus production-browser smoke checks
+using an isolated synthetic API. Checks covered sparse edits, optional-field clearing, reassignment,
+delete rollback/success, dashboard range requests and empty states, viewer restrictions, theme switching,
+375px layouts and dialog keyboard focus. Real-backend integration and Lighthouse remain deployment checks.

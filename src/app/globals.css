@@ -136,4 +136,22 @@
   body {
     @apply min-h-dvh bg-background text-foreground;
   }
+
+  /* Links and native controls receive the same visible keyboard focus as UI primitives. */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+/* Honor the operating-system preference for drawers, spinners, charts and route transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

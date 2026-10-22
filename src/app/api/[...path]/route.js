@@ -111,7 +111,9 @@ async function forward(request, { params }) {
     return fail(403, "FORBIDDEN", "You do not have permission to perform this action");
   }
 
-  const { body, error } = method === "GET" ? {} : await readBody(request);
+  // The allowlisted DELETE endpoints identify the record entirely in the URL and accept no body.
+  // Next can expose an empty DELETE stream; requiring JSON for it incorrectly rejects valid deletes.
+  const { body, error } = ["GET", "DELETE"].includes(method) ? {} : await readBody(request);
   if (error) return error;
 
   // Only the server can read the cookie and API_URL; never forward incoming headers wholesale.

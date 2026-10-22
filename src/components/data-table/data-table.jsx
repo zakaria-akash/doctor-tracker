@@ -17,6 +17,7 @@ function DataTable({
   getRowHref,
   getRowKey = (row, index) => row.id ?? row._id ?? index,
   caption = "Results",
+  announcement,
   className,
 }) {
   const router = useRouter();
@@ -26,7 +27,14 @@ function DataTable({
   }
 
   if (data.length === 0) {
-    return emptyState ?? null;
+    return (
+      <>
+        <p role="status" className="sr-only">
+          {announcement ?? "No results found"}
+        </p>
+        {emptyState ?? null}
+      </>
+    );
   }
 
   // Navigate only when the row itself was activated, never when a nested control was clicked.
@@ -42,6 +50,10 @@ function DataTable({
       aria-busy={isFetching}
       className={cn("relative overflow-hidden rounded-xl border bg-card", className)}
     >
+      {/* Counts describe the filtered result set without moving the keyboard user's focus. */}
+      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {isFetching ? "Updating results…" : (announcement ?? `${data.length} results shown`)}
+      </p>
       {isFetching ? (
         <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-primary/20">
           <div className="h-full w-1/3 rounded-full bg-primary motion-safe:animate-pulse" />
@@ -50,7 +62,7 @@ function DataTable({
 
       {/* Cards keep dense table content readable on narrow screens. */}
       <div
-        className={cn("grid gap-3 p-3 transition-opacity md:hidden", isFetching && "opacity-60")}
+        className={cn("grid gap-3 p-3 transition-opacity lg:hidden", isFetching && "opacity-60")}
       >
         {data.map((row, index) => {
           const href = getRowHref?.(row);
@@ -81,8 +93,8 @@ function DataTable({
         })}
       </div>
 
-      {/* The semantic table appears from the medium breakpoint upward. */}
-      <div className="hidden overflow-x-auto md:block">
+      {/* The semantic table appears when the desktop layout has enough room for every column. */}
+      <div className="hidden overflow-x-auto lg:block">
         <table className="w-full text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="border-b bg-muted/45 text-left text-xs font-semibold tracking-wide text-muted-foreground uppercase">

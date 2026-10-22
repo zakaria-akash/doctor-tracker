@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Filter, Plus, RotateCcw, Trash2, Users } from "lucide-react";
-import { debounce } from "nuqs";
+import { debounce, parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -18,6 +18,7 @@ import {
   ConditionBadge,
   ConfirmDialog,
   EmptyState,
+  QueryFeedback,
   ResponsiveDialog,
   StatusBadge,
 } from "@/components/feedback";
@@ -89,8 +90,12 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
   const queryClient = useQueryClient();
   const { filters, setFilters, apiParams } = usePatientFilters();
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
-  const [patientToRemove, setPatientToRemove] = useState(null);
+  // Open dialogs belong to the URL so cached routes cannot resurrect stale modal state.
+  const [addParam, setAddParam] = useQueryState("new", parseAsInteger.withDefault(0));
+  const [removeId, setRemoveId] = useQueryState("remove", parseAsString);
+  const [removalSnapshot, setRemovalSnapshot] = useState(null);
+  const addOpen = addParam === 1;
+  const setAddOpen = (open) => setAddParam(open ? 1 : null);
   const removePatient = useDeleteDoctorPatient(doctorId);
 
   // The nested backend route already locks the doctor; memoization also keeps prefetch effects stable.
@@ -124,6 +129,21 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
   );
   const patients = useQuery(doctorPatientsQuery(doctorId, scopedParams));
   const result = patients.data;
+  // Keep the confirmation text stable while optimistic removal updates the visible list.
+  const patientToRemove =
+    removeId && /^[a-f\d]{24}$/i.test(removeId)
+      ? ((removalSnapshot?.id === removeId
+          ? removalSnapshot
+          : result?.data?.find((patient) => patient.id === removeId)) ?? {
+          id: removeId,
+          name: "this patient",
+        })
+      : null;
+
+  function requestRemoval(patient) {
+    setRemovalSnapshot(patient);
+    setRemoveId(patient.id);
+  }
 
   // Prefetch the next scoped page once its existence is known.
   useEffect(() => {
@@ -158,7 +178,9 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
     try {
       await removePatient.mutateAsync(patientToRemove.id);
       toast.success(`${patientToRemove.name} was removed`);
-      setPatientToRemove(null);
+      setRemoveId(null);
+      // Deleting the last row on a later page should reveal the preceding page, not an empty dead end.
+      if (result?.data?.length === 1 && filters.page > 1) setFilters({ page: filters.page - 1 });
       // Refresh the server-rendered profile count after the client-side mutation succeeds.
       router.refresh();
     } catch (error) {
@@ -194,7 +216,7 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
   );
 
   return (
-    <RemovePatientContext value={canEdit ? setPatientToRemove : null}>
+    <RemovePatientContext value={canEdit ? requestRemoval : null}>
       <Card>
         <CardHeader className="gap-4 sm:grid-cols-[1fr_auto]">
           <div>
@@ -211,7 +233,7 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
           ) : null}
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <SearchInput
               value={filters.search}
               onChange={(value) =>
@@ -232,6 +254,12 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
             >
               <Filter aria-hidden="true" />
               Filters
+              {activeFilters.some(Boolean) ? (
+                <span className="rounded-full bg-primary/10 px-1.5 text-xs text-primary">
+                  {activeFilters.filter(Boolean).length}
+                  <span className="sr-only"> active</span>
+                </span>
+              ) : null}
             </Button>
           </div>
 
@@ -244,6 +272,13 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
             {filterControls}
           </ResponsiveDialog>
           <ActiveFilters filters={activeFilters} onClear={updateFilter} onClearAll={resetFilters} />
+
+          {/* Preserve loaded rows after a refresh failure, but explicitly mark their stale state. */}
+          <QueryFeedback
+            error={patients.isError && result ? patients.error : null}
+            onRetry={() => patients.refetch()}
+            isFetching={patients.isFetching}
+          />
 
           {patients.isError && !result ? (
             <EmptyState
@@ -263,6 +298,7 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
               isPending={patients.isPending}
               isFetching={patients.isFetching}
               caption={`Patients assigned to ${doctorName}`}
+              announcement={`${result?.meta?.total ?? 0} patients found`}
               getRowKey={(patient) => patient.id}
               renderMobileCard={(patient) => <PatientMobileCard patient={patient} />}
               emptyState={
@@ -316,8 +352,8 @@ export function DoctorPatientsPanel({ doctorId, doctorName }) {
       ) : null}
 
       <ConfirmDialog
-        open={Boolean(patientToRemove)}
-        onOpenChange={(open) => !open && !removePatient.isPending && setPatientToRemove(null)}
+        open={canEdit && Boolean(patientToRemove)}
+        onOpenChange={(open) => !open && !removePatient.isPending && setRemoveId(null)}
         title="Remove patient?"
         description={
           patientToRemove

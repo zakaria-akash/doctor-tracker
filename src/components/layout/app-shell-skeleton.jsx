@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function AppShellSkeleton() {
   return (
     <div className="flex min-h-dvh bg-background" aria-label="Loading application">
-      <aside className="hidden w-64 shrink-0 border-r bg-sidebar p-4 md:block">
+      <aside className="hidden w-64 shrink-0 border-r bg-sidebar p-4 lg:block">
         <Skeleton className="mb-8 h-10 w-40" />
         <div className="space-y-3">
           {Array.from({ length: 3 }, (_, index) => (

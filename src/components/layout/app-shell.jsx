@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
@@ -320,22 +320,24 @@ function Breadcrumbs() {
   );
 }
 
-function AppHeader({ collapsed, onNavigationToggle }) {
+function AppHeader({ collapsed, onNavigationToggle, navigationRef, expanded }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b bg-background/88 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/72 md:px-6">
       <Button
+        ref={navigationRef}
         type="button"
         variant="ghost"
         size="icon"
         onClick={onNavigationToggle}
         aria-label="Toggle navigation"
+        aria-expanded={expanded}
         title="Toggle navigation"
       >
-        <Menu className="size-5 md:hidden" aria-hidden="true" />
+        <Menu className="size-5 lg:hidden" aria-hidden="true" />
         {collapsed ? (
-          <PanelLeftOpen className="hidden size-5 md:block" aria-hidden="true" />
+          <PanelLeftOpen className="hidden size-5 lg:block" aria-hidden="true" />
         ) : (
-          <PanelLeftClose className="hidden size-5 md:block" aria-hidden="true" />
+          <PanelLeftClose className="hidden size-5 lg:block" aria-hidden="true" />
         )}
       </Button>
       <div className="min-w-0 flex-1">
@@ -351,6 +353,8 @@ export function AppShell({ children }) {
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // The controlled drawer has no Radix Trigger, so retain the real menu button for focus return.
+  const navigationRef = useRef(null);
 
   function toggleNavigation() {
     if (isMobile) setMobileOpen(true);
@@ -359,10 +363,17 @@ export function AppShell({ children }) {
 
   return (
     <div className="flex min-h-dvh bg-background">
+      {/* Keyboard users can bypass repeated navigation and reach the current page immediately. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
       {/* Desktop navigation remains in normal flow, so content never hides beneath it. */}
       <aside
         className={cn(
-          "sticky top-0 hidden h-dvh shrink-0 border-r border-sidebar-border transition-[width] duration-200 md:block",
+          "sticky top-0 hidden h-dvh shrink-0 border-r border-sidebar-border transition-[width] duration-200 lg:block",
           collapsed ? "w-18" : "w-64",
         )}
       >
@@ -370,10 +381,16 @@ export function AppShell({ children }) {
       </aside>
 
       {/* Radix Dialog provides focus trapping, Escape handling and an accessible mobile drawer. */}
-      <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
+      <Dialog.Root open={mobileOpen && isMobile} onOpenChange={setMobileOpen}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-black/45 backdrop-blur-[1px] data-[state=closed]:animate-out data-[state=open]:animate-in" />
-          <Dialog.Content className="fixed inset-y-0 left-0 z-50 w-[min(86vw,20rem)] border-r border-sidebar-border bg-sidebar shadow-2xl outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:animate-in data-[state=open]:slide-in-from-left">
+          <Dialog.Content
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              navigationRef.current?.focus();
+            }}
+            className="fixed inset-y-0 left-0 z-50 w-[min(86vw,20rem)] border-r border-sidebar-border bg-sidebar shadow-2xl outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:animate-in data-[state=open]:slide-in-from-left"
+          >
             <Dialog.Title className="sr-only">Main navigation</Dialog.Title>
             <Dialog.Description className="sr-only">
               Navigate between Doctor Tracker sections.
@@ -396,8 +413,17 @@ export function AppShell({ children }) {
 
       {/* The persistent header surrounds a bounded, responsive page content area. */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppHeader collapsed={collapsed} onNavigationToggle={toggleNavigation} />
-        <main id="main-content" className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8">
+        <AppHeader
+          collapsed={collapsed}
+          onNavigationToggle={toggleNavigation}
+          navigationRef={navigationRef}
+          expanded={isMobile ? mobileOpen : !collapsed}
+        />
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="mx-auto w-full max-w-7xl flex-1 p-4 sm:p-6 lg:p-8"
+        >
           {children}
         </main>
       </div>

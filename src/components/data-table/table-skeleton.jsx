@@ -8,9 +8,11 @@ function TableSkeleton({ columns = 6, rows = 10 }) {
       aria-busy="true"
       className="overflow-hidden rounded-xl border bg-card"
     >
-      <span className="sr-only">Loading results</span>
+      <span role="status" className="sr-only">
+        Loading results
+      </span>
 
-      <div className="grid gap-3 p-3 md:hidden">
+      <div className="grid gap-3 p-3 lg:hidden">
         {Array.from({ length: Math.min(rows, 5) }, (_, rowIndex) => (
           <div key={rowIndex} className="space-y-3 rounded-lg border p-4">
             <Skeleton className="h-5 w-2/3" />
@@ -20,7 +22,7 @@ function TableSkeleton({ columns = 6, rows = 10 }) {
         ))}
       </div>
 
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <div
           className="grid h-11 items-center gap-4 border-b bg-muted/45 px-4"
           style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}

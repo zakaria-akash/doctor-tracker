@@ -58,12 +58,7 @@ export function CreateDoctorDialog({ open, onOpenChange, hospitals = [] }) {
     >
       <form className="space-y-4" onSubmit={handleSubmit(submit)} noValidate>
         <FormField id="doctor-name" label="Name" error={errors.name} required>
-          <Input
-            {...register("name")}
-            placeholder="Dr. Ayesha Rahman"
-            autoComplete="name"
-            autoFocus
-          />
+          <Input {...register("name")} placeholder="Dr. Ayesha Rahman" autoComplete="name" />
         </FormField>
 
         <FormField

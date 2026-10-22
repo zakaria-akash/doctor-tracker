@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertDialog } from "radix-ui";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -16,12 +17,26 @@ function ConfirmDialog({
   onConfirm,
   pending = false,
 }) {
+  // Keep keyboard focus anchored even when a row opens this controlled dialog without a Trigger.
+  const returnFocusRef = useRef(null);
   return (
     <AlertDialog.Root open={open} onOpenChange={onOpenChange}>
       {trigger ? <AlertDialog.Trigger asChild>{trigger}</AlertDialog.Trigger> : null}
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-50 bg-black/55 backdrop-blur-[1px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-        <AlertDialog.Content className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-background p-6 shadow-xl outline-none data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:zoom-in-95">
+        <AlertDialog.Content
+          onOpenAutoFocus={() => {
+            returnFocusRef.current = document.activeElement;
+          }}
+          onCloseAutoFocus={(event) => {
+            if (trigger) return;
+            event.preventDefault();
+            const target = returnFocusRef.current;
+            if (target?.isConnected && target !== document.body) target.focus();
+            else document.getElementById("main-content")?.focus();
+          }}
+          className="fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl border bg-background p-6 shadow-xl outline-none data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:zoom-in-95"
+        >
           <AlertDialog.Title className="text-lg font-semibold">{title}</AlertDialog.Title>
           <AlertDialog.Description className="mt-2 text-sm leading-6 text-muted-foreground">
             {description}

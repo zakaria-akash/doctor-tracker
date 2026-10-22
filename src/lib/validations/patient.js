@@ -32,9 +32,17 @@ const patientFields = {
   email: optionalEmail,
   condition: z.enum(CONDITIONS, { error: "Select a condition" }),
   status: z.enum(STATUSES, { error: "Select a status" }),
-  admissionDate: z.coerce
-    .date({ error: "Choose an admission date" })
-    .refine((date) => date <= new Date(), "Admission date cannot be in the future"),
+  // Native date inputs represent local midnight; UTC parsing would reject today's date in UTC+ zones.
+  admissionDate: z.preprocess(
+    (value) => {
+      if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+      const [year, month, day] = value.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    },
+    z.coerce
+      .date({ error: "Choose an admission date" })
+      .refine((date) => date <= new Date(), "Admission date cannot be in the future"),
+  ),
   notes: z.preprocess(
     (value) => (value === "" ? undefined : value),
     z.string().trim().max(500, "Notes cannot exceed 500 characters").optional(),
